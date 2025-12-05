@@ -1,0 +1,5 @@
+server:
+  port: 8081
+
+collector:
+  url: http://localhost:8080/log
