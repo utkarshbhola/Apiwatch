@@ -1,3 +1,10 @@
-**/gradle-*.zip
+node_modules/
+.next/
+
 .gradle/
-**/.gradle/
+build/
+out/
+dist/
+**/gradle-*.zip
+
+*.log

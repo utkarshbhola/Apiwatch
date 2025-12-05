@@ -5,9 +5,17 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 # Gradle wrapper distribution zips
-**/gradle-*.zip
+node_modules/
+.next/
+
 .gradle/
-**/.gradle/
+build/
+out/
+dist/
+**/gradle-*.zip
+
+*.log
+
 
 ### STS ###
 .apt_generated
