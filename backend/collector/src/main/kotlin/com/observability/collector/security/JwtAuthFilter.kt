@@ -19,7 +19,7 @@ class JwtAuthFilter(private val jwtUtil: JwtUtil) : OncePerRequestFilter() {
 
     override fun shouldNotFilter(request: HttpServletRequest): Boolean {
         val path = request.requestURI
-        return path.startsWith("/auth/login") || path.startsWith("/actuator") || path == "/"
+        return path.startsWith("/auth/login") || path.startsWith("/auth/signup")  || path.startsWith("/actuator") || path == "/"
     }
 
     override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {

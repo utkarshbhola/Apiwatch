@@ -59,12 +59,6 @@ class CollectorController(
     @GetMapping("/stats")
     fun getStats(): ResponseEntity<Any> = ResponseEntity.ok(collectorService.getStats())
 
-    @PutMapping("/issue/{id}/resolve")
-    fun resolveIssue(@PathVariable id: String): ResponseEntity<ApiResponse> {
-        val resolved = collectorService.resolveIssue(id)
-        return ResponseEntity.ok(ApiResponse("issue resolved", resolved))
-    }
-
     // Simple SSE endpoint for new logs
     @GetMapping("/stream/logs")
     fun streamLogs(): SseEmitter {

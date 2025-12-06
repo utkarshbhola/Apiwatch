@@ -22,6 +22,10 @@ export default api;
 /* ============================
    AUTH
 ============================ */
+export async function signup(username: string, password: string) {
+  const res = await api.post("/auth/signup", { username, password });
+  return res.data;
+}
 
 export async function login(username: string, password: string) {
   const res = await api.post("/auth/login", { username, password });
@@ -82,3 +86,9 @@ export async function resolveIssue(id: string) {
   const res = await api.put(`/issue/${id}/resolve`);
   return res.data;
 }
+
+export async function getIssues() {
+  const res = await api.get("/issue");
+  return res.data;
+}
+

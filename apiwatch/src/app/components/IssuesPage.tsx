@@ -1,5 +1,7 @@
-'use client";'
-import { useState } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
+import { getIssues, resolveIssue } from "@/lib/api";
 import { Card, CardContent } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Badge } from "../ui/badge";
@@ -8,147 +10,103 @@ import { CheckCircle2 } from "lucide-react";
 
 interface Issue {
   id: string;
-  title: string;
-  endpoint: string;
+  type: string;
   serviceName: string;
-  status: "pending" | "resolved";
-  severity: "high" | "medium" | "low";
+  endpoint: string;
+  description: string;
+  resolved: boolean;
   createdAt: string;
   resolvedAt?: string;
 }
 
-export function IssuesPage() {
-  const [issues, setIssues] = useState<Issue[]>([
-    {
-      id: "1",
-      title: "Payment API Database Connection Failed",
-      endpoint: "/api/v1/payments",
-      serviceName: "Payment Service",
-      status: "pending",
-      severity: "high",
-      createdAt: "2025-12-03 14:23:38",
-    },
-    {
-      id: "2",
-      title: "Search API Elasticsearch Timeout",
-      endpoint: "/api/v1/search",
-      serviceName: "Search Service",
-      status: "pending",
-      severity: "high",
-      createdAt: "2025-12-03 14:23:10",
-    },
-    {
-      id: "3",
-      title: "User API Slow Response Time",
-      endpoint: "/api/v1/users",
-      serviceName: "User Service",
-      status: "pending",
-      severity: "medium",
-      createdAt: "2025-12-03 14:23:45",
-    },
-    {
-      id: "4",
-      title: "Analytics API Performance Degradation",
-      endpoint: "/api/v1/analytics",
-      serviceName: "Analytics Service",
-      status: "pending",
-      severity: "medium",
-      createdAt: "2025-12-03 14:23:42",
-    },
-    {
-      id: "5",
-      title: "Auth Service Rate Limit Configuration",
-      endpoint: "/api/v1/auth/login",
-      serviceName: "Auth Service",
-      status: "resolved",
-      severity: "medium",
-      createdAt: "2025-12-03 13:15:20",
-      resolvedAt: "2025-12-03 14:05:12",
-    },
-    {
-      id: "6",
-      title: "Export API Memory Leak",
-      endpoint: "/api/v1/export",
-      serviceName: "Export Service",
-      status: "resolved",
-      severity: "high",
-      createdAt: "2025-12-03 12:30:15",
-      resolvedAt: "2025-12-03 13:45:30",
-    },
-    {
-      id: "7",
-      title: "Notification Service Rate Limiting",
-      endpoint: "/api/v1/notifications",
-      serviceName: "Notification Service",
-      status: "resolved",
-      severity: "low",
-      createdAt: "2025-12-03 11:20:45",
-      resolvedAt: "2025-12-03 12:10:20",
-    },
-  ]);
+/* Severity based on type (your project has no severity field)
+   So we decide dynamic severity:
+   - broken-api = high
+   - slow-api = medium
+   - rate-limit-hit = low
+*/
+const getSeverity = (type: string): "high" | "medium" | "low" => {
+  if (type === "broken-api") return "high";
+  if (type === "slow-api") return "medium";
+  return "low";
+};
 
-  const handleMarkAsResolved = (issueId: string) => {
-    setIssues((prevIssues) =>
-      prevIssues.map((issue) =>
-        issue.id === issueId
-          ? {
-              ...issue,
-              status: "resolved" as const,
-              resolvedAt: new Date().toLocaleString("en-US", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-                hour12: false,
-              }).replace(",", ""),
-            }
-          : issue
-      )
-    );
+export default function IssuesPage() {
+  const [issues, setIssues] = useState<Issue[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await getIssues(); // <-- backend /issue
+        setIssues(data);
+      } catch (err) {
+        console.error("Failed to fetch issues:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  const handleResolve = async (id: string) => {
+    try {
+      const updated = await resolveIssue(id); // calls PUT /issue/{id}/resolve
+
+      // Optimistically update UI
+      setIssues((prev) =>
+        prev.map((i) =>
+          i.id === id ? { ...i, resolved: true, resolvedAt: updated.resolvedAt } : i
+        )
+      );
+    } catch (err) {
+      console.error("Failed to resolve:", err);
+    }
   };
 
-  const getSeverityBadge = (severity: string) => {
-    const colors: { [key: string]: string } = {
-      high: "bg-red-100 text-red-700 hover:bg-red-100",
-      medium: "bg-yellow-100 text-yellow-700 hover:bg-yellow-100",
-      low: "bg-blue-100 text-blue-700 hover:bg-blue-100",
+  const getSeverityBadge = (type: string) => {
+    const severity = getSeverity(type);
+
+    const colors: Record<string, string> = {
+      high: "bg-red-100 text-red-700",
+      medium: "bg-yellow-100 text-yellow-700",
+      low: "bg-blue-100 text-blue-700",
     };
+
     return (
       <Badge className={colors[severity]}>
-        {severity.charAt(0).toUpperCase() + severity.slice(1)}
+        {severity.toUpperCase()}
       </Badge>
     );
   };
 
-  const getStatusBadge = (status: string) => {
-    return status === "resolved" ? (
-      <Badge className="bg-green-100 text-green-700 hover:bg-green-100 flex items-center gap-1 w-fit">
+  const getStatusBadge = (resolved: boolean) => {
+    return resolved ? (
+      <Badge className="bg-green-100 text-green-700 flex items-center gap-1">
         <CheckCircle2 className="w-3 h-3" />
         Resolved
       </Badge>
     ) : (
-      <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100">Pending</Badge>
+      <Badge className="bg-orange-100 text-orange-700">Pending</Badge>
     );
   };
 
-  const pendingIssues = issues.filter((issue) => issue.status === "pending");
-  const resolvedIssues = issues.filter((issue) => issue.status === "resolved");
+  const pending = issues.filter((i) => !i.resolved);
+  const resolved = issues.filter((i) => i.resolved);
+
+  if (loading) return <p className="p-8">Loading issues...</p>;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-[1400px] mx-auto px-6 py-8">
-        <div className="mb-8">
-          <h1 className="text-gray-900 mb-2">Issues</h1>
-          <p className="text-gray-600">Manage and track API issues</p>
-        </div>
+        <h1 className="text-gray-900 mb-2">Issues</h1>
+        <p className="text-gray-600 mb-8">Manage and track API issues</p>
 
         {/* Pending Issues */}
-        {pendingIssues.length > 0 && (
+        {pending.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-gray-900 mb-4">Pending Issues ({pendingIssues.length})</h2>
-            <Card className="border-0 shadow-sm">
+            <h2 className="text-gray-900 mb-4">Pending Issues ({pending.length})</h2>
+            <Card>
               <CardContent className="pt-6">
                 <Table>
                   <TableHeader>
@@ -162,23 +120,22 @@ export function IssuesPage() {
                       <TableHead>Action</TableHead>
                     </TableRow>
                   </TableHeader>
+
                   <TableBody>
-                    {pendingIssues.map((issue) => (
+                    {pending.map((issue) => (
                       <TableRow key={issue.id}>
                         <TableCell className="text-gray-900 max-w-xs">
-                          {issue.title}
+                          {issue.description}
                         </TableCell>
-                        <TableCell className="text-gray-600">{issue.serviceName}</TableCell>
-                        <TableCell className="text-gray-600 text-sm font-mono">
-                          {issue.endpoint}
-                        </TableCell>
-                        <TableCell>{getSeverityBadge(issue.severity)}</TableCell>
-                        <TableCell>{getStatusBadge(issue.status)}</TableCell>
-                        <TableCell className="text-gray-600 text-sm">{issue.createdAt}</TableCell>
+                        <TableCell>{issue.serviceName}</TableCell>
+                        <TableCell className="font-mono text-sm">{issue.endpoint}</TableCell>
+                        <TableCell>{getSeverityBadge(issue.type)}</TableCell>
+                        <TableCell>{getStatusBadge(issue.resolved)}</TableCell>
+                        <TableCell>{issue.createdAt}</TableCell>
                         <TableCell>
                           <Button
-                            onClick={() => handleMarkAsResolved(issue.id)}
-                            className="text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700"
+                            onClick={() => handleResolve(issue.id.$oid)}
+                            className="text-green-600 border-green-300 hover:bg-green-50"
                           >
                             Mark as Resolved
                           </Button>
@@ -186,6 +143,7 @@ export function IssuesPage() {
                       </TableRow>
                     ))}
                   </TableBody>
+
                 </Table>
               </CardContent>
             </Card>
@@ -193,10 +151,11 @@ export function IssuesPage() {
         )}
 
         {/* Resolved Issues */}
-        {resolvedIssues.length > 0 && (
+        {resolved.length > 0 && (
           <div>
-            <h2 className="text-gray-900 mb-4">Resolved Issues ({resolvedIssues.length})</h2>
-            <Card className="border-0 shadow-sm">
+            <h2 className="text-gray-900 mb-4">Resolved Issues ({resolved.length})</h2>
+
+            <Card>
               <CardContent className="pt-6">
                 <Table>
                   <TableHeader>
@@ -210,23 +169,21 @@ export function IssuesPage() {
                       <TableHead>Resolved At</TableHead>
                     </TableRow>
                   </TableHeader>
+
                   <TableBody>
-                    {resolvedIssues.map((issue) => (
-                      <TableRow key={issue.id} className="opacity-60">
-                        <TableCell className="text-gray-900 max-w-xs">
-                          {issue.title}
-                        </TableCell>
-                        <TableCell className="text-gray-600">{issue.serviceName}</TableCell>
-                        <TableCell className="text-gray-600 text-sm font-mono">
-                          {issue.endpoint}
-                        </TableCell>
-                        <TableCell>{getSeverityBadge(issue.severity)}</TableCell>
-                        <TableCell>{getStatusBadge(issue.status)}</TableCell>
-                        <TableCell className="text-gray-600 text-sm">{issue.createdAt}</TableCell>
-                        <TableCell className="text-gray-600 text-sm">{issue.resolvedAt}</TableCell>
+                    {resolved.map((issue) => (
+                      <TableRow key={issue.id} className="opacity-75">
+                        <TableCell>{issue.description}</TableCell>
+                        <TableCell>{issue.serviceName}</TableCell>
+                        <TableCell className="font-mono text-sm">{issue.endpoint}</TableCell>
+                        <TableCell>{getSeverityBadge(issue.type)}</TableCell>
+                        <TableCell>{getStatusBadge(issue.resolved)}</TableCell>
+                        <TableCell>{issue.createdAt}</TableCell>
+                        <TableCell>{issue.resolvedAt ?? "-"}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
+
                 </Table>
               </CardContent>
             </Card>
@@ -236,5 +193,3 @@ export function IssuesPage() {
     </div>
   );
 }
-
-export default IssuesPage;

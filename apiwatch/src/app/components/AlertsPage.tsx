@@ -11,7 +11,7 @@ interface AlertItem {
   timestamp: string;
   service: string;
   endpoint: string;
-  data: any;
+  data: unknown;
 }
 
 export default function AlertsPage() {
@@ -23,7 +23,7 @@ export default function AlertsPage() {
       try {
         const raw = await getAlerts();
 
-        const mapped = raw.map((a: any) => ({
+        const mapped = raw.map((a: unknown) => ({
           id: a.id,
           type: a.type,
           timestamp: a.data.timestamp,

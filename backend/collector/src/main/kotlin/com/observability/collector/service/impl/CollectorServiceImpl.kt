@@ -56,6 +56,27 @@ class CollectorServiceImpl(
             ))
             alertsRepository.save(alert)
         }
+        // 🔥 Create Issue when 500 errors occur
+        if (log.status >= 500) {
+            // Check if there is already an unresolved issue for this service + endpoint
+            val existing = issueRepository.findByServiceNameAndEndpointAndResolvedFalse(
+                log.service,
+                log.endpoint
+            )
+
+            if (existing == null) {
+                val issue = Issue(
+                    type = "broken-api",
+                    serviceName = log.service,
+                    endpoint = log.endpoint,
+                    description = "500 response detected",
+                    resolved = false,
+                    createdAt = Instant.now()
+                )
+                issueRepository.save(issue)
+            }
+        }
+
         return saved
     }
 

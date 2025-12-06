@@ -10,6 +10,11 @@ export async function login(username: string, password: string) {
   return res.data;
 }
 
+export async function signup(username: string, password: string) {
+  const res = await api.post("/auth/signup", { username, password });
+  return res.data;
+}
+
 export function logout() {
   localStorage.removeItem("jwt");
 }

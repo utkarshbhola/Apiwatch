@@ -8,7 +8,7 @@ interface NavigationProps {
 }
 
 export default function Navigation({ currentPage, onNavigate }: NavigationProps) {
-  const navItems = ["Dashboard", "Logs", "Alerts", "Issues", "Settings"];
+  const navItems = ["Dashboard", "Logs", "Alerts", "Issues"];
 
   return (
     <nav className="bg-white border-b border-gray-200 shadow-sm">

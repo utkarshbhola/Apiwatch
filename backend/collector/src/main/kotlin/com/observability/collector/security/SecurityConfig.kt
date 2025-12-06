@@ -29,7 +29,8 @@ class SecurityConfig(
             .csrf { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { auth ->
-                auth.requestMatchers("/auth/login", "/actuator/health", "/actuator/info", "/", "/stream/logs", "/log").permitAll()
+                auth.requestMatchers("/auth/login","/auth/signup" ,"/actuator/health", "/actuator/info", "/", "/stream/logs", "/log", "/issue",
+                    "/issue/**").permitAll()
                 auth.anyRequest().authenticated()
             }
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)

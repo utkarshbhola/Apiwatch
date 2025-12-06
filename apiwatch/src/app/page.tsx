@@ -22,6 +22,7 @@ export default function Page() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("jwt");
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsLoggedIn(!!token);
     }
   }, []);
