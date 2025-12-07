@@ -15,7 +15,7 @@ dist/
 **/gradle-*.zip
 
 *.log
-
+.env
 
 ### STS ###
 .apt_generated

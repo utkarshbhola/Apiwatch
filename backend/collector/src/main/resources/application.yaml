@@ -1,18 +1,14 @@
 spring:
   data:
     mongodb:
-      primary:
-        uri: mongodb://localhost:27017/logsDB
-      secondary:
-        uri: mongodb://localhost:27017/metaDB
+      main:
+        uri: ${MONGO_URI_MAIN}
+      logs:
+        uri: ${MONGO_URI_LOGS}
 
 jwt:
-  secret: "1234567890123456789012345678901234567890"
+  secret: ${JWT_SECRET}
   expiration-ms: ${JWT_EXP_MS:86400000}
 
-cors:
-  allowed-origins:
-    - http://localhost:3000
-
 server:
-  port: 8080
+  port: ${PORT:8080}
