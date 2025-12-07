@@ -1,191 +1,191 @@
-APIWATCH — API Observability & Monitoring Platform
+# APIWATCH — API Observability & Monitoring Platform
 
-📄 Official Documentation: https://docs.google.com/document/d/1PFIMDdcGAzySj004vL7AsaPKSBvYsu2b6m2TbfTCfPU/edit?tab=t.0
+A distributed API observability platform that tracks latency, failures, rate-limit events, and system behavior across microservices.
+Built with Spring Boot + Kotlin, MongoDB, and a Next.js Dashboard.
 
-🚀 Overview
+Full Documentation: https://docs.google.com/document/d/1PFIMDdcGAzySj004vL7AsaPKSBvYsu2b6m2TbfTCfPU/edit
+Deployed Collector Dashboard: https://apiwatch-u8jx.vercel.app/
 
-APIWATCH is a distributed API monitoring platform that tracks latency, errors, rate-limit hits, and system-wide API behavior across microservices.
-It includes a tracking client, a central collector, dual MongoDB setup, concurrency-safe issue resolution, and a Next.js dashboard.
+## Architecture Overview
 
-🏛 Architecture
+APIWATCH has four core components:
 
+### API Tracking Client (Spring Boot + Kotlin)
+Intercepts every request, captures metadata, applies rate limiter, and sends logs.
 
+### Collector Service (Spring Boot + kotlin)
+Ingests logs, writes to dual MongoDB, generates alerts, and exposes REST APIs.
 
-Components
+### Dashboard (Next.js)
+Real-time logs viewer, alerts dashboard, issues page, and analytics.
 
-API Tracking Client (Spring Boot + Kotlin) — Interceptor that captures API metrics, applies rate limiter, and sends logs to Collector.
+### Test Microservice(Spring Boot + kotlin)
+Generates slow/error/healthy endpoints to validate tracking.
 
-Test Microservice — Simulates real traffic (success/slow/error endpoints) for validation.
+## High-Level Flow
 
-Collector Service (Spring Boot) — Receives logs, stores them in dual databases, generates alerts, exposes REST APIs.
+→ logsDB (write-heavy logs)  
+→ metaDB (users, alerts, issues)  
+→ Dashboard fetches insights
 
-Dashboard (Next.js) — Log explorer, alerts viewer, analytics UI.
+## Database Schemas (Simplified)
+### logsDB (High-volume log storage)
+{
+  "service": "string",
+  "endpoint": "string",
+  "method": "GET/POST",
+  "status": 200,
+  "latency": 123,
+  "timestamp": "ISO"
+}
 
-High-Level Flow
+### metaDB 
+#### users
+{ "username": "admin", "passwordHash": "..." }
 
-Microservice receives request
+#### alerts
+{ "type": "rate-limit-hit", "data": {...}, "createdAt": "ISO" }
 
-Tracking Interceptor logs metadata + rate-limit hit
+#### issues (Optimistic Locking)
+{
+  "type": "broken-api",
+  "serviceName": "user-service",
+  "endpoint": "/login",
+  "description": "500 responses",
+  "resolved": false,
+  "version": 1,
+  "createdAt": "ISO"
+}
 
-Logs sent to Collector
-
-Collector writes to logsDB + metaDB
-
-Dashboard fetches aggregated insights
-
-🗄 Database Schemas
-
-(From pages 4–7, 5–7 in PDF 
-
-API observability and monitorin…
-
-)
-
-Dual MongoDB Setup
-Database	Purpose
-logsDB	High-volume API logs (write-heavy).
-metaDB	Users, alerts, issues (consistency-critical).
-Schemas
-logsDB — logs collection
-
-service
-
-endpoint
-
-method
-
-status
-
-latency
-
-timestamp
-
-metaDB
-
-users
-
-username
-
-passwordHash
-
-role
-
-alerts
-
-type
-
-payload/data
-
-createdAt
-
-issues
-
-type
-
-serviceName
-
-endpoint
-
-description
-
-resolved (bool)
-
-@Version (optimistic locking)
-
-createdAt
-
-🧠 Key Design Decisions
-
-(From pages 7–9 in PDF 
-
-API observability and monitorin…
-
-)
-
-MongoDB over SQL
+## Key Design Decisions
+### MongoDB over SQL
 
 Handles semi-structured log data
 
-High write throughput
+Designed for high write throughput
 
-Natural JSON document format
+Natural JSON format reduces mapping overhead
 
-Dual Database Architecture
+### Dual Database Architecture
 
-Prevents heavy log writes from affecting metadata operations
+logsDB → heavy writes
 
-Ensures dashboard & auth remain fast under load
+metaDB → critical metadata (users, issues, alerts)
 
-Optimistic Locking for Issues
+Ensures spikes in log traffic never slow down the dashboard or auth
 
-Prevents race conditions
+### Optimistic Locking for Issue Resolution
 
-Guarantees an issue resolves exactly once
+Guarantees an issue is resolved exactly once
 
-JWT Authentication
+Prevents concurrency conflicts between multiple dashboard users
 
-Stateless, scalable, easy to integrate with Next.js
+### JWT Authentication
 
-REST for Now (gRPC planned)
+Stateless
 
-Lower complexity
+Easy to integrate with Next.js dashboard
 
-Simpler integration between Spring Boot + JS
+Scales well horizontally
 
-🗂 How Dual MongoDB Setup Works
+## How the Dual MongoDB Setup Works
+### Database	Purpose
+#### logsDB	
+      High-volume logs, optimized for writes, supports TTL cleanup
+#### metaDB	
+      Users, alerts, issues — consistency-critical
 
-(From page 5 of PDF 
+### Why two DBs?
 
-API observability and monitorin…
+Log spikes never affect metadata operations
 
-)
+Dashboard stays responsive even under heavy load
 
-logsDB receives all API logs — this DB is optimized for massive write throughput.
+TTL can expire logs without touching critical data
 
-metaDB stores users, alerts, issues — consistency and concurrency control matter here.
-
-Separation ensures:
-
-Log spikes don’t slow down metadata reads
-
-Issue resolution and dashboard rendering stay reliable
-
-TTL indexes can be applied safely to logs without affecting critical data
-
-⏱ How the Rate Limiter Works
-
-(From pages 9–11 of PDF 
-
-API observability and monitorin…
-
-)
-
-Model: Fixed-Window Counter
+## How the Rate Limiter Works
+### Model: Fixed-Window Counter (1-second window)
 
 Inside each microservice:
 
-Each request increments an in-memory counter.
+Request arrives
 
-Counter resets every 1 second.
+Counter increments in memory
 
-Requests are never blocked.
+If threshold crossed → rate-limit-hit = true
 
-When the limit is exceeded, a rate-limit-hit event is logged.
+Request still proceeds (non-blocking)
 
-Interceptor Flow
+Collector receives this signal and creates an alert
 
-Request arrives → rateLimiter.hit()
+### Why this design?
 
-If threshold exceeded → log contains "rate-limit-hit": true
+Adds zero latency to APIs
 
-Collector persists this as an alert
+Useful for detecting traffic spikes
 
-Why this design?
+Safe to run inside production microservices
 
-Zero added latency
+Easy to visualize in dashboard analytics
 
-Works safely inside live microservices
+## Tech Stack
 
-Detects spikes without impacting traffic
+Spring Boot + Kotlin — microservices, interceptor, collector
 
-Enables alerting + dashboard charts for traffic anomalies
+MongoDB — dual DB architecture
+
+Next.js + TypeScript — dashboard
+
+JWT Auth — secure access
+
+Docker & Render - backend deployment
+Vercel - Frontend deployment
+
+## Running the Project Locally
+
+#### Clone the repository:
+
+```bash
+git clone https://github.com/utkarshbhola/apiwatch.git
+cd apiwatch
+```
+### Start the Collector Service (Spring Boot + Kotlin)
+
+```bash
+cd collector
+./gradlew clean bootRun
+```
+
+The Collector will start on http://localhost:8080
+
+It exposes:
+
+/logs — ingest API logs
+
+/alerts — fetch alerts
+
+/issues — manage issues
+
+### Start the Dashboard (Next.js)
+
+```bash
+cd dashboard
+npm install
+npm run dev
+```
+
+Dashboard runs on http://localhost:3000
+### Run the Test Microservice
+Simulates success / slow / error endpoints for testing:
+```bash
+cd test-microservice
+./gradlew bootRun
+```
+
+### Configure Environment Variables
+
+Inside dashboard/.env.local:
+```bash
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+```
+
