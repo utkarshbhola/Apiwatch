@@ -8,23 +8,20 @@ export function useAuth() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // LOGIN -----------------------------
   async function handleLogin(username: string, password: string) {
     try {
       setLoading(true);
 
       const token = await login(username, password);
 
-      console.log("TOKEN FROM login():", token);
-
       if (!token) {
         alert("Invalid username or password");
         return;
       }
 
-      // save token here (not inside login.ts)
+      // Save JWT
       localStorage.setItem("jwt", token);
-
-      console.log("JWT SAVED TO localStorage:", localStorage.getItem("jwt"));
 
       router.push("/");
     } catch (err) {
@@ -35,5 +32,11 @@ export function useAuth() {
     }
   }
 
-  return { handleLogin, loading };
+  // LOGOUT ----------------------------
+  function handleLogout() {
+    localStorage.removeItem("jwt"); // remove token
+    router.push("/login");          // send user to login screen
+  }
+
+  return { handleLogin, handleLogout, loading };
 }
