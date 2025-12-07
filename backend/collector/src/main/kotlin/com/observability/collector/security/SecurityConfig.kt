@@ -20,8 +20,6 @@ class SecurityConfig(
     private val jwtAuthFilter: JwtAuthFilter
 ) {
 
-    @Value("\${cors.allowed-origins[0]}")
-    private lateinit var allowedOrigin: String
 
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
@@ -42,10 +40,16 @@ class SecurityConfig(
     @Bean
     fun corsConfigurationSource(): UrlBasedCorsConfigurationSource {
         val corsConfig = CorsConfiguration()
-        corsConfig.allowedOrigins = listOf(allowedOrigin)
+
+        corsConfig.allowedOrigins = listOf(
+            "https://apiwatch-u8jx.vercel.app",
+            "http://localhost:3000"
+        )
+
         corsConfig.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
         corsConfig.allowedHeaders = listOf("*")
         corsConfig.allowCredentials = true
+
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", corsConfig)
         return source
