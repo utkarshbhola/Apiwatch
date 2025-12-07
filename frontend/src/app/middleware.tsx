@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-export function middleware(req: { cookies: { get: (arg0: string) => { (): unknown; new(): unknown; value: null; }; }; nextUrl: { pathname: string; }; url: string | URL | undefined; }) {
+export function middleware(req: { cookies: { get: (arg0: string) => { (): any; new(): any; value: null; }; }; nextUrl: { pathname: string; }; url: string | URL | undefined; }) {
   const token = req.cookies.get("jwt")?.value || null;
 
   // Public routes

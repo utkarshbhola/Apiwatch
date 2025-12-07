@@ -5,7 +5,7 @@ export const getAlerts = async () => {
   return res.data;
 };
 
-export const createAlert = async (alert: unknown) => {
+export const createAlert = async (alert: any) => {
   const res = await api.post("/alerts", alert);
   return res.data;
 };

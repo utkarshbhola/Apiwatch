@@ -9,7 +9,7 @@ export const getLogs = async (params?: {
   return res.data;
 };
 
-export const createLog = async (logData: unknown) => {
+export const createLog = async (logData: any) => {
   const res = await api.post("/collector/logs", logData);
   return res.data;
 };

@@ -5,7 +5,7 @@ export const getIssues = async () => {
   return res.data;
 };
 
-export const createIssue = async (issue: unknown) => {
+export const createIssue = async (issue: any) => {
   const res = await api.post("/issues", issue);
   return res.data;
 };
