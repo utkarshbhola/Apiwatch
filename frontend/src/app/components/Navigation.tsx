@@ -5,6 +5,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { Activity, LogOut } from "lucide-react";
 import Avatar from "../ui/avatar";
 
+interface NavigationProps {
+  currentPage: string;
+  onNavigate: (page: string) => void;
+}
+
 export default function Navigation({ currentPage, onNavigate }: NavigationProps) {
   const navItems = ["Dashboard", "Logs", "Alerts", "Issues"];
   const [open, setOpen] = useState(false);
