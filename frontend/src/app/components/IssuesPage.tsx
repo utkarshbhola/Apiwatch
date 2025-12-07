@@ -134,7 +134,7 @@ export default function IssuesPage() {
                         <TableCell>{issue.createdAt}</TableCell>
                         <TableCell>
                           <Button
-                            onClick={() => handleResolve(issue.id.$oid)}
+                            onClick={() => handleResolve(issue.id)}
                             className="text-green-600 border-green-300 hover:bg-green-50"
                           >
                             Mark as Resolved
