@@ -17,9 +17,10 @@ RUN gradle bootJar --no-daemon
 FROM eclipse-temurin:17-jre
 WORKDIR /app
 
-# Copy the built jar from the builder stage
 COPY --from=builder /app/collector/build/libs/*.jar app.jar
 
-EXPOSE 8080
+# Pick up Render's PORT
+ENV PORT=10000
+EXPOSE 10000
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "java -Dserver.port=$PORT -jar app.jar"]
