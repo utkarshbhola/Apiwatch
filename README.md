@@ -4,6 +4,7 @@ A distributed API observability platform that tracks latency, failures, rate-lim
 Built with Spring Boot + Kotlin, MongoDB, and a Next.js Dashboard.
 
 Full Documentation: [https://docs.google.com/document/d/1PFIMDdcGAzySj004vL7AsaPKSBvYsu2b6m2TbfTCfPU/edit](https://docs.google.com/document/d/e/2PACX-1vTWiEAg06qhXSNs88qfeopg-lCh6RToxvNFtVPhvJOFSwhKE9BmDOB6MBzibyO2wB4O3Y7aZP4y3Y9Q/pub)
+
 Deployed Collector Dashboard: https://apiwatch-u8jx.vercel.app/
 
 ## Architecture Overview
