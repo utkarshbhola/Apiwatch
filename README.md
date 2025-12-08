@@ -45,17 +45,25 @@ Generates slow/error/healthy endpoints to validate tracking.
 { "username": "admin", "passwordHash": "..." }
 
 #### alerts
-{ "type": "rate-limit-hit", "data": {...}, "createdAt": "ISO" }
+{
+  "_id": "string",
+  "type": "string",
+  "data": {
+    // dynamic key-value fields depending on alert type
+  },
+  "createdAt": 1733664859201
+}
 
 #### issues (Optimistic Locking)
 {
-  "type": "broken-api",
-  "serviceName": "user-service",
-  "endpoint": "/login",
-  "description": "500 responses",
+  "_id": "string",
+  "type": "string",
+  "serviceName": "string",
+  "endpoint": "string",
+  "description": "string",
   "resolved": false,
   "version": 1,
-  "createdAt": "ISO"
+  "createdAt": "2025-02-10T10:32:12.201Z"
 }
 <img width="1138" height="469" alt="Untitled diagram-2025-12-05-150150" src="https://github.com/user-attachments/assets/3659c1f4-735d-4c19-90b1-58ce9f9e487b" />
 
