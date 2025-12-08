@@ -17,11 +17,11 @@ Intercepts every request, captures metadata, applies rate limiter, and sends log
 Ingests logs, writes to dual MongoDB, generates alerts, and exposes REST APIs.
 
 ### Dashboard (Next.js)
-Real-time logs viewer, alerts dashboard, issues page, and analytics.
+logs viewer, alerts dashboard, issues page, and analytics.
 
 ### Test Microservice(Spring Boot + kotlin)
 Generates slow/error/healthy endpoints to validate tracking.
-
+<img width="2746" height="873" alt="architecture overview" src="https://github.com/user-attachments/assets/cf36ca16-8ad6-49a8-a8b3-5a8e04f40eb3" />
 ## High-Level Flow
 
 → logsDB (write-heavy logs)  
