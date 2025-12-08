@@ -10,7 +10,7 @@ Deployed Collector Dashboard: https://apiwatch-u8jx.vercel.app/
 
 APIWATCH has four core components:
 
-### API Tracking Client (Spring Boot + Kotlin)
+### Tracking Interceptor (Spring Boot + Kotlin)
 Intercepts every request, captures metadata, applies rate limiter, and sends logs.
 
 ### Collector Service (Spring Boot + kotlin)
@@ -27,6 +27,7 @@ Generates slow/error/healthy endpoints to validate tracking.
 → logsDB (write-heavy logs)  
 → metaDB (users, alerts, issues)  
 → Dashboard fetches insights
+<img width="3335" height="1340" alt="Untitled diagram-2025-12-05-150031" src="https://github.com/user-attachments/assets/4bb8674f-2e45-4d1a-a030-9605fc8b65d0" />
 
 ## Database Schemas (Simplified)
 ### logsDB (High-volume log storage)
@@ -56,6 +57,8 @@ Generates slow/error/healthy endpoints to validate tracking.
   "version": 1,
   "createdAt": "ISO"
 }
+<img width="1138" height="469" alt="Untitled diagram-2025-12-05-150150" src="https://github.com/user-attachments/assets/3659c1f4-735d-4c19-90b1-58ce9f9e487b" />
+
 
 ## Key Design Decisions
 ### MongoDB over SQL
@@ -188,4 +191,6 @@ Inside dashboard/.env.local:
 ```bash
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
 ```
+
+For concurrency and performance test results (K6 + Grafana), see the full [documentation]([url](https://docs.google.com/document/d/1PFIMDdcGAzySj004vL7AsaPKSBvYsu2b6m2TbfTCfPU/edit)).
 
